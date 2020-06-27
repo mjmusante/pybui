@@ -3,8 +3,7 @@
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from multiprocessing import Process, Manager
 import os
-
-
+from urllib.parse import urlparse
 from subprocess import Popen, PIPE, STDOUT
 from select import poll, POLLIN
 
@@ -16,12 +15,30 @@ total = 0
 class Raster(BaseHTTPRequestHandler):
 
     def do_GET(self):
+        parsed_path = urlparse(self.path)
         self.send_response(200)
         self.send_header("Content-type", "text/html")
         self.end_headers()
-        self.wfile.write(
-            f"<html><body>Current total = {self.server.mydict['t']}"
-            .encode('utf-8'))
+
+        print(parsed_path)
+
+        if parsed_path.path == "/":
+            self.wfile.write("<html><body>"
+                             "<a href=/total>total</a>"
+                             "<a href=/last>last number</a>".encode('utf-8'))
+            print("base")
+        elif parsed_path.path == "/total":
+            self.wfile.write(
+                f"<html><body>Current total = {self.server.mydict['t']}"
+                .encode('utf-8'))
+            print("total")
+        elif parsed_path.path == "/last":
+            self.wfile.write(
+                f"<html><body>Current total = {self.server.mydict['n']}"
+                .encode('utf-8'))
+            print("number")
+        else:
+            print(f"nothing {parsed_path.path}")
 
 
 def serve(d):
@@ -42,6 +59,7 @@ def blast(pollobj, d):
         sumstr = data.split(" ")[2]
         total = sumstr.split("=")[1]
         d['t'] = total
+        d['n'] = data.split(" ")[1]
     return True
 
 
