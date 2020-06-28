@@ -9,8 +9,6 @@ from select import poll, POLLIN
 
 from service.serv import busywork
 
-total = 0
-
 
 class Raster(BaseHTTPRequestHandler):
 
@@ -24,8 +22,9 @@ class Raster(BaseHTTPRequestHandler):
 
         if parsed_path.path == "/":
             self.wfile.write("<html><body>"
-                             "<a href=/total>total</a>"
-                             "<a href=/last>last number</a>".encode('utf-8'))
+                             "<a href=/total>total</a><br/>"
+                             "<a href=/last>last number</a><br/>"
+                             "<a href=/stop>stop</a>".encode('utf-8'))
             print("base")
         elif parsed_path.path == "/total":
             self.wfile.write(
@@ -37,6 +36,8 @@ class Raster(BaseHTTPRequestHandler):
                 f"<html><body>Current total = {self.server.mydict['n']}"
                 .encode('utf-8'))
             print("number")
+        elif parsed_path.path == "/stop":
+            self.server.mydict['s'] = True
         else:
             print(f"nothing {parsed_path.path}")
 
@@ -49,7 +50,7 @@ def serve(d):
 
 
 def blast(pollobj, d):
-    global total
+    d['s'] = False
     for f, e in outpoll.poll():
         if e != POLLIN:
             return False
@@ -60,7 +61,7 @@ def blast(pollobj, d):
         total = sumstr.split("=")[1]
         d['t'] = total
         d['n'] = data.split(" ")[1]
-    return True
+    return not d['s']
 
 
 if __name__ == "__main__":

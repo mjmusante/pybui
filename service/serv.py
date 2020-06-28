@@ -12,7 +12,7 @@ def busywork(timeout=1):
         open(sys.stdout.fileno(), 'wb', 0), write_through=True)
     tot = 0
     count = 0
-    while tot < 1000:
+    while tot < 2000:
         num = random.randrange(89) + 10
         tot += num
         count += 1
